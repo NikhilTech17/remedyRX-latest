@@ -869,7 +869,7 @@ signinForm.addEventListener('submit', function(e) {
     
     // Simple frontend validation
     if (!email || !password) {
-        alert('Please fill in all fields');
+        showMessage('Please fill in all fields', 'error');
         return;
     }
     
@@ -887,12 +887,7 @@ signinForm.addEventListener('submit', function(e) {
         },
         body: JSON.stringify({ email, password })
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => { throw err; });
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         if (data.token) {
             // Store token in localStorage
@@ -908,12 +903,12 @@ signinForm.addEventListener('submit', function(e) {
             // Update UI to show user is logged in
             updateAuthUI(true, data.user);
         } else {
-            showMessage(data.message || 'Login failed', 'error');
+            showMessage(data.message || 'Login failed. Please check your credentials.', 'error');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        showMessage(error.message || 'Login failed. Please try again.', 'error');
+        console.error('Login error:', error);
+        showMessage('An error occurred during login. Please try again.', 'error');
     })
     .finally(() => {
         // Reset button state
@@ -925,26 +920,34 @@ signinForm.addEventListener('submit', function(e) {
 signupForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const firstNameInput = this.querySelector('input[placeholder="First Name"]');
-    const lastNameInput = this.querySelector('input[placeholder="Last Name"]');
-    const emailInput = this.querySelector('input[type="email"]');
-    const passwordInputs = this.querySelectorAll('input[type="password"]');
+    const inputs = this.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+    const firstNameInput = inputs[0];
+    const lastNameInput = inputs[1];
+    const emailInput = inputs[2];
+    const passwordInput = inputs[3];
+    const confirmPasswordInput = inputs[4];
     
-    const firstName = firstNameInput.value;
-    const lastName = lastNameInput.value;
-    const email = emailInput.value;
-    const password = passwordInputs[0].value;
-    const confirmPassword = passwordInputs[1].value;
+    const firstName = firstNameInput.value.trim();
+    const lastName = lastNameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    const confirmPassword = confirmPasswordInput.value;
     
     // Simple frontend validation
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
-        alert('Please fill in all fields');
+        showMessage('Please fill in all fields', 'error');
         return;
     }
     
     // Check if passwords match
     if (password !== confirmPassword) {
-        alert('Passwords do not match!');
+        showMessage('Passwords do not match!', 'error');
+        return;
+    }
+    
+    // Validate password length
+    if (password.length < 6) {
+        showMessage('Password must be at least 6 characters long', 'error');
         return;
     }
     
@@ -962,12 +965,7 @@ signupForm.addEventListener('submit', function(e) {
         },
         body: JSON.stringify({ firstName, lastName, email, password })
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => { throw err; });
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         if (data.token) {
             // Store token in localStorage
@@ -983,12 +981,12 @@ signupForm.addEventListener('submit', function(e) {
             // Update UI to show user is logged in
             updateAuthUI(true, data.user);
         } else {
-            showMessage(data.message || 'Registration failed', 'error');
+            showMessage(data.message || 'Registration failed. Please check your information.', 'error');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        showMessage(error.message || 'Registration failed. Please try again.', 'error');
+        console.error('Registration error:', error);
+        showMessage('An error occurred during registration. Please try again.', 'error');
     })
     .finally(() => {
         // Reset button state
